@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <meta charset="utf-8" />
+  <title>Dashboard • Port</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="/app.js"></script>
+  <body onload="requireAuth(); loadEnCours();">
+    <nav>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="catways.html">CatWays</a>
+      <a href="reservations.html">Réservations</a>
+      <a href="users.html">Utilisateurs</a>
+      <a href="/api-docs" target="_blank">Doc API</a>
+      <div class="right">
+        <span id="badge"></span>
+        <button onclick="doLogout()">Se déconnecter</button>
+      </div>
+    </nav>
+
+    <div class="container">
+      <h2>Réservations en cours — <span id="today"></span></h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Catway</th>
+            <th>Client</th>
+            <th>Bateau</th>
+            <th>Début</th>
+            <th>Fin</th>
+          </tr>
+        </thead>
+        <tbody id="tbody">
+          <tr>
+            <td colspan="5">Chargement…</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+      function setHeader() {
+        const u = getUser();
+        document.getElementById("badge").textContent = u
+          ? `${u.name} <${u.email}>`
+          : "";
+        document.getElementById("today").textContent =
+          new Date().toLocaleDateString();
+      }
+      async function loadEnCours() {
+        setHeader();
+        try {
+          const all = await http("/reservations");
+          const now = Date.now();
+          const enCours = all.filter(
+            (r) => new Date(r.startDate) <= now && now <= new Date(r.endDate)
+          );
+          const tb = document.getElementById("tbody");
+          tb.innerHTML = "";
+          if (enCours.length === 0) {
+            tb.innerHTML = '<tr><td colspan="5">Aucune</td></tr>';
+            return;
+          }
+          for (const r of enCours) {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+            <td>${r.catwayNumber}</td>
+            <td>${r.clientName}</td>
+            <td>${r.boatName}</td>
+            <td>${new Date(r.startDate).toLocaleString()}</td>
+            <td>${new Date(r.endDate).toLocaleString()}</td>`;
+            tb.appendChild(tr);
+          }
+        } catch {
+          document.getElementById("tbody").innerHTML =
+            '<tr><td colspan="5">Erreur</td></tr>';
+        }
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <meta charset="utf-8" />
+  <title>Réservations • Port</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="/app.js"></script>
+  <body onload="requireAuth(); loadReservations();">
+    <nav>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="catways.html">CatWays</a>
+      <a href="reservations.html">Réservations</a>
+      <a href="users.html">Utilisateurs</a>
+      <a href="/api-docs" target="_blank">Doc API</a>
+      <div class="right">
+        <button onclick="doLogout()">Se déconnecter</button>
+      </div>
+    </nav>
+
+    <div class="container">
+      <h2>Réservations</h2>
+      <form id="fCreate">
+        <input
+          id="catwayNumber"
+          type="number"
+          placeholder="Catway #"
+          required
+        />
+        <input id="clientName" placeholder="Client" required />
+        <input id="boatName" placeholder="Bateau" required />
+        <label
+          >Début <input id="startDate" type="datetime-local" required
+        /></label>
+        <label>Fin <input id="endDate" type="datetime-local" required /></label>
+        <button>Créer</button>
+        <span id="err" class="err" style="display: none"></span>
+      </form>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Catway</th>
+            <th>Client</th>
+            <th>Bateau</th>
+            <th>Début</th>
+            <th>Fin</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tbody">
+          <tr>
+            <td colspan="6">Chargement…</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+      const toISO = (v) => (v ? new Date(v).toISOString() : null);
+
+      async function loadReservations() {
+        const tb = document.getElementById("tbody");
+        tb.innerHTML = "";
+        const rows = await http("/reservations");
+        if (rows.length === 0) {
+          tb.innerHTML = '<tr><td colspan="6">Aucune</td></tr>';
+          return;
+        }
+        for (const r of rows) {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+          <td>${r.catwayNumber}</td>
+          <td>${r.clientName}</td>
+          <td>${r.boatName}</td>
+          <td>${new Date(r.startDate).toLocaleString()}</td>
+          <td>${new Date(r.endDate).toLocaleString()}</td>
+          <td>
+            <button data-edit="${r._id}">Modifier</button>
+            <button data-del="${r._id}">Supprimer</button>
+          </td>`;
+          tb.appendChild(tr);
+        }
+        tb.querySelectorAll("[data-del]").forEach((b) => {
+          b.onclick = async () => {
+            if (confirm("Supprimer ?")) {
+              await http("/reservations/" + b.dataset.del, {
+                method: "DELETE",
+              });
+              loadReservations();
+            }
+          };
+        });
+        tb.querySelectorAll("[data-edit]").forEach((b) => {
+          b.onclick = async () => {
+            const row = b.closest("tr").children;
+            const c = prompt("Catway #", row[0].textContent);
+            const client = prompt("Client", row[1].textContent);
+            const boat = prompt("Bateau", row[2].textContent);
+            const start = prompt(
+              "Début (ISO ex 2024-10-01T06:00:00Z)",
+              new Date(row[3].textContent).toISOString()
+            );
+            const end = prompt(
+              "Fin (ISO)",
+              new Date(row[4].textContent).toISOString()
+            );
+            if (c && client && boat && start && end) {
+              await http("/reservations/" + b.dataset.edit, {
+                method: "PUT",
+                body: {
+                  catwayNumber: Number(c),
+                  clientName: client,
+                  boatName: boat,
+                  startDate: start,
+                  endDate: end,
+                },
+              });
+              loadReservations();
+            }
+          };
+        });
+      }
+
+      document.getElementById("fCreate").onsubmit = async (e) => {
+        e.preventDefault();
+        const err = document.getElementById("err");
+        err.style.display = "none";
+        try {
+          await http("/reservations", {
+            method: "POST",
+            body: {
+              catwayNumber: Number(
+                document.getElementById("catwayNumber").value
+              ),
+              clientName: document.getElementById("clientName").value,
+              boatName: document.getElementById("boatName").value,
+              startDate: toISO(document.getElementById("startDate").value),
+              endDate: toISO(document.getElementById("endDate").value),
+            },
+          });
+          e.target.reset();
+          loadReservations();
+        } catch {
+          err.textContent = "Création échouée";
+          err.style.display = "inline";
+        }
+      };
+    </script>
+  </body>
+</html>

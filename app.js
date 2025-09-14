@@ -1,8 +1,14 @@
 require("dotenv").config();
 const express = require("express");
+const path = require("path");
 const mongoose = require("mongoose");
 const reservationRoutes = require("./routes/reservationRoute");
 const app = express();
+
+app.use(express.static(path.join(__dirname, "front")));
+app.get("/", (_req, res) =>
+  res.sendFile(path.join(__dirname, "front", "index.html"))
+);
 
 app.use(express.json());
 app.get("/_health", (_req, res) =>

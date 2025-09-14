@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <meta charset="utf-8" />
+  <title>CatWays • Port</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="/app.js"></script>
+  <body onload="requireAuth(); loadCatways();">
+    <nav>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="catways.html">CatWays</a>
+      <a href="reservations.html">Réservations</a>
+      <a href="users.html">Utilisateurs</a>
+      <a href="/api-docs" target="_blank">Doc API</a>
+      <div class="right">
+        <button onclick="doLogout()">Se déconnecter</button>
+      </div>
+    </nav>
+
+    <div class="container">
+      <h2>CatWays</h2>
+      <form id="fCreate">
+        <input id="num" type="number" placeholder="Numéro" required />
+        <input id="type" placeholder="Type (long/short)" required />
+        <input id="state" placeholder="État" required />
+        <button>Créer</button>
+        <span id="err" class="err" style="display: none"></span>
+      </form>
+
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Type</th>
+            <th>État</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tbody">
+          <tr>
+            <td colspan="4">Chargement…</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+      async function loadCatways() {
+        const tb = document.getElementById("tbody");
+        tb.innerHTML = "";
+        const rows = await http("/catways");
+        if (rows.length === 0) {
+          tb.innerHTML = '<tr><td colspan="4">Aucun</td></tr>';
+          return;
+        }
+        for (const c of rows) {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+          <td>${c.catwayNumber}</td>
+          <td>${c.catwayType}</td>
+          <td>${c.catwayState}</td>
+          <td>
+            <button data-edit="${c._id}">Modifier</button>
+            <button data-del="${c._id}">Supprimer</button>
+          </td>`;
+          tb.appendChild(tr);
+        }
+        // actions
+        tb.querySelectorAll("[data-del]").forEach((b) => {
+          b.onclick = async () => {
+            if (confirm("Supprimer ?")) {
+              await http("/catways/" + b.dataset.del, { method: "DELETE" });
+              loadCatways();
+            }
+          };
+        });
+        tb.querySelectorAll("[data-edit]").forEach((b) => {
+          b.onclick = async () => {
+            const row = b.closest("tr").children;
+            const n = prompt("Numéro", row[0].textContent);
+            const t = prompt("Type", row[1].textContent);
+            const s = prompt("État", row[2].textContent);
+            if (n && t && s) {
+              await http("/catways/" + b.dataset.edit, {
+                method: "PUT",
+                body: {
+                  catwayNumber: Number(n),
+                  catwayType: t,
+                  catwayState: s,
+                },
+              });
+              loadCatways();
+            }
+          };
+        });
+      }
+
+      document.getElementById("fCreate").onsubmit = async (e) => {
+        e.preventDefault();
+        const err = document.getElementById("err");
+        err.style.display = "none";
+        try {
+          await http("/catways", {
+            method: "POST",
+            body: {
+              catwayNumber: Number(document.getElementById("num").value),
+              catwayType: document.getElementById("type").value,
+              catwayState: document.getElementById("state").value,
+            },
+          });
+          e.target.reset();
+          loadCatways();
+        } catch {
+          err.textContent = "Création échouée";
+          err.style.display = "inline";
+        }
+      };
+    </script>
+  </body>
+</html>
