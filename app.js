@@ -4,6 +4,8 @@ const path = require("path");
 const mongoose = require("mongoose");
 const reservationRoutes = require("./routes/reservationRoute");
 const app = express();
+const swaggerUi = require("swagger-ui-express");
+const swaggerSpec = require("./docs/swagger");
 
 app.use(express.static(path.join(__dirname, "front")));
 app.get("/", (_req, res) =>
@@ -23,6 +25,7 @@ app.use("/", require("./routes/authRoute"));
 
     app.use("/catways", require("./routes/catwayRoute"));
     app.use("/reservations", reservationRoutes);
+    app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () =>
       console.log(`API prête sur http://localhost:${PORT}`)

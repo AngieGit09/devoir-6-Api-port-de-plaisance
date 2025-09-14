@@ -10,6 +10,7 @@ const stripSystemFields = (obj) => {
   return obj;
 };
 
+// GET / Reservations
 exports.getAllReservations = async (_req, res) => {
   try {
     const docs = await Reservation.find().lean();
@@ -19,6 +20,7 @@ exports.getAllReservations = async (_req, res) => {
   }
 };
 
+//GEt / Reservation /:id
 exports.getReservationById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -34,6 +36,7 @@ exports.getReservationById = async (req, res) => {
   }
 };
 
+//POST / Reservation
 exports.createReservation = async (req, res) => {
   try {
     const { catwayNumber, clientName, boatName, startDate, endDate } =
@@ -45,12 +48,10 @@ exports.createReservation = async (req, res) => {
       !startDate ||
       !endDate
     ) {
-      return res
-        .status(400)
-        .json({
-          message:
-            "catwayNumber, clientName, boatName, startDate, endDate requis",
-        });
+      return res.status(400).json({
+        message:
+          "catwayNumber, clientName, boatName, startDate, endDate requis",
+      });
     }
     const doc = await Reservation.create({
       catwayNumber,
@@ -67,6 +68,7 @@ exports.createReservation = async (req, res) => {
   }
 };
 
+//PUT / Reservation /:id
 exports.updateReservation = async (req, res) => {
   try {
     const { id } = req.params;
@@ -112,6 +114,7 @@ exports.updateReservation = async (req, res) => {
   }
 };
 
+//PATCH / Reservation/:id
 exports.patchReservation = async (req, res) => {
   try {
     const { id } = req.params;
@@ -143,6 +146,7 @@ exports.patchReservation = async (req, res) => {
   }
 };
 
+//DELETE / Reservation/:id
 exports.deleteReservation = async (req, res) => {
   try {
     const { id } = req.params;

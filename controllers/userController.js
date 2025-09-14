@@ -49,7 +49,7 @@ exports.createUser = async (req, res) => {
   }
 };
 
-// PUT /users/:email  (on autorise maj du name et du mot de passe)
+// PUT /users/:email  
 exports.updateUser = async (req, res) => {
   try {
     const email = decodeURIComponent(req.params.email).toLowerCase();

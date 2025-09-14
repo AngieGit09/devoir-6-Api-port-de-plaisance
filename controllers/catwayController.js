@@ -10,6 +10,7 @@ const stripSystemFields = (obj) => {
   return obj;
 };
 
+//GET / Catways
 exports.getAllCatways = async (_req, res) => {
   try {
     const docs = await Catway.find().lean();
@@ -19,6 +20,7 @@ exports.getAllCatways = async (_req, res) => {
   }
 };
 
+// GET / catway/:id
 exports.getCatwayById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -33,6 +35,7 @@ exports.getCatwayById = async (req, res) => {
   }
 };
 
+//POST / catway
 exports.createCatway = async (req, res) => {
   try {
     const { catwayNumber, catwayType, catwayState } = req.body || {};
@@ -50,6 +53,7 @@ exports.createCatway = async (req, res) => {
   }
 };
 
+//PUT / Catway/:id
 exports.updateCatway = async (req, res) => {
   try {
     const { id } = req.params;
@@ -84,6 +88,7 @@ exports.updateCatway = async (req, res) => {
   }
 };
 
+//PATCH / Catway/:id
 exports.patchCatway = async (req, res) => {
   try {
     const { id } = req.params;
@@ -113,6 +118,7 @@ exports.patchCatway = async (req, res) => {
   }
 };
 
+//DELETE / Catway/:id
 exports.deleteCatway = async (req, res) => {
   try {
     const { id } = req.params;
