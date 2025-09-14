@@ -1,7 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
-
+const reservationRoutes = require("./routes/reservationRoute");
 const app = express();
 app.use(express.json());
 app.get("/_health", (_req, res) =>
@@ -14,7 +14,7 @@ app.get("/_health", (_req, res) =>
     console.log("MongoDB OK");
 
     app.use("/catways", require("./routes/catwayRoute"));
-
+    app.use("/reservations", reservationRoutes);
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () =>
       console.log(`API prête sur http://localhost:${PORT}`)
