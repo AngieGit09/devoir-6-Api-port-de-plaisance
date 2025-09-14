@@ -3,11 +3,13 @@ const express = require("express");
 const mongoose = require("mongoose");
 const reservationRoutes = require("./routes/reservationRoute");
 const app = express();
+
 app.use(express.json());
 app.get("/_health", (_req, res) =>
   res.json({ state: mongoose.connection.readyState })
 );
-
+app.use("/users", require("./routes/userRoute"));
+app.use("/", require("./routes/authRoute"));
 (async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI);
