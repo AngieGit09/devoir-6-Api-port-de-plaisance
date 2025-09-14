@@ -1,15 +1,16 @@
-/*const mongoose = require("mongoose");
-
-const reservationSchema = new mongoose.Schema({
-  numero: Number,
-  client: String,
-  bateau: String,
-  dateDebut: Date,
-  dateFin: Date,
-  catway: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "catways",
+const mongoose = require("mongoose");
+const ReservationSchema = new mongoose.Schema(
+  {
+    catwayNumber: Number,
+    clientName: String,
+    boatName: String,
+    startDate: Date,
+    endDate: Date,
   },
-});
-
-module.exports = mongoose.model("Reservation", reservationSchema);*/
+  { timestamps: true }
+);
+module.exports = mongoose.model(
+  "Reservation",
+  ReservationSchema,
+  "reservations"
+);

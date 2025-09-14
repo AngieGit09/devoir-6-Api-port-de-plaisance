@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const Catway = require("../models/catway");
+const Reservation = require("../models/reservation");
 
 const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
 const stripSystemFields = (obj) => {
@@ -10,22 +10,23 @@ const stripSystemFields = (obj) => {
   return obj;
 };
 
-exports.getAllCatways = async (_req, res) => {
+exports.getAllReservations = async (_req, res) => {
   try {
-    const docs = await Catway.find().lean();
+    const docs = await Reservation.find().lean();
     res.status(200).json(docs);
   } catch (error) {
     res.status(500).json({ message: "Erreur serveur", error: String(error) });
   }
 };
 
-exports.getCatwayById = async (req, res) => {
+exports.getReservationById = async (req, res) => {
   try {
     const { id } = req.params;
     if (!isValidId(id)) return res.status(400).json({ message: "ID invalide" });
 
-    const doc = await Catway.findById(id).lean();
-    if (!doc) return res.status(404).json({ message: "Catway introuvable" });
+    const doc = await Reservation.findById(id).lean();
+    if (!doc)
+      return res.status(404).json({ message: "Reservation introuvable" });
 
     res.status(200).json(doc);
   } catch (error) {
@@ -33,16 +34,32 @@ exports.getCatwayById = async (req, res) => {
   }
 };
 
-exports.createCatway = async (req, res) => {
+exports.createReservation = async (req, res) => {
   try {
-    const { catwayNumber, catwayType, catwayState } = req.body || {};
-    if (catwayNumber == null || !catwayType || !catwayState) {
+    const { catwayNumber, clientName, boatName, startDate, endDate } =
+      req.body || {};
+    if (
+      catwayNumber == null ||
+      !clientName ||
+      !boatName ||
+      !startDate ||
+      !endDate
+    ) {
       return res
         .status(400)
-        .json({ message: "catwayNumber, catwayType, catwayState requis" });
+        .json({
+          message:
+            "catwayNumber, clientName, boatName, startDate, endDate requis",
+        });
     }
-    const doc = await Catway.create({ catwayNumber, catwayType, catwayState });
-    res.status(201).json({ message: "CatWay créé", catway: doc });
+    const doc = await Reservation.create({
+      catwayNumber,
+      clientName,
+      boatName,
+      startDate,
+      endDate,
+    });
+    res.status(201).json({ message: "Reservation créée", reservation: doc });
   } catch (error) {
     res
       .status(400)
@@ -50,13 +67,20 @@ exports.createCatway = async (req, res) => {
   }
 };
 
-exports.updateCatway = async (req, res) => {
+exports.updateReservation = async (req, res) => {
   try {
     const { id } = req.params;
     if (!isValidId(id)) return res.status(400).json({ message: "ID invalide" });
 
-    const { catwayNumber, catwayType, catwayState } = req.body || {};
-    if (catwayNumber == null || !catwayType || !catwayState) {
+    const { catwayNumber, clientName, boatName, startDate, endDate } =
+      req.body || {};
+    if (
+      catwayNumber == null ||
+      !clientName ||
+      !boatName ||
+      !startDate ||
+      !endDate
+    ) {
       return res
         .status(400)
         .json({ message: "Tous les champs sont requis pour PUT" });
@@ -64,19 +88,23 @@ exports.updateCatway = async (req, res) => {
 
     const payload = stripSystemFields({
       catwayNumber,
-      catwayType,
-      catwayState,
+      clientName,
+      boatName,
+      startDate,
+      endDate,
     });
 
-    const updated = await Catway.findByIdAndUpdate(id, payload, {
+    const updated = await Reservation.findByIdAndUpdate(id, payload, {
       new: true,
       runValidators: true,
       overwrite: true,
     });
     if (!updated)
-      return res.status(404).json({ message: "CatWay introuvable" });
+      return res.status(404).json({ message: "Reservation introuvable" });
 
-    res.status(200).json({ message: "CatWay mis à jour", catway: updated });
+    res
+      .status(200)
+      .json({ message: "Reservation mise à jour", reservation: updated });
   } catch (error) {
     res
       .status(400)
@@ -84,7 +112,7 @@ exports.updateCatway = async (req, res) => {
   }
 };
 
-exports.patchCatway = async (req, res) => {
+exports.patchReservation = async (req, res) => {
   try {
     const { id } = req.params;
     if (!isValidId(id)) return res.status(400).json({ message: "ID invalide" });
@@ -94,7 +122,7 @@ exports.patchCatway = async (req, res) => {
       return res.status(400).json({ message: "Aucune donnée à modifier" });
     }
 
-    const patched = await Catway.findByIdAndUpdate(
+    const patched = await Reservation.findByIdAndUpdate(
       id,
       { $set: payload },
       {
@@ -103,9 +131,11 @@ exports.patchCatway = async (req, res) => {
       }
     );
     if (!patched)
-      return res.status(404).json({ message: "CatWay introuvable" });
+      return res.status(404).json({ message: "Reservation introuvable" });
 
-    res.status(200).json({ message: "CatWay modifié", catway: patched });
+    res
+      .status(200)
+      .json({ message: "Reservation modifiée", reservation: patched });
   } catch (error) {
     res
       .status(400)
@@ -113,14 +143,14 @@ exports.patchCatway = async (req, res) => {
   }
 };
 
-exports.deleteCatway = async (req, res) => {
+exports.deleteReservation = async (req, res) => {
   try {
     const { id } = req.params;
     if (!isValidId(id)) return res.status(400).json({ message: "ID invalide" });
 
-    const deleted = await Catway.findByIdAndDelete(id);
+    const deleted = await Reservation.findByIdAndDelete(id);
     if (!deleted)
-      return res.status(404).json({ message: "CatWay introuvable" });
+      return res.status(404).json({ message: "Reservation introuvable" });
 
     res.status(204).send();
   } catch (error) {
