@@ -8,7 +8,7 @@ Documentation API (Swagger) : https://devoir-6-api-port-de-plaisance.onrender.co
 
 IDENTIFIANT 
 Email : plaisance@port.local
-Mot de passe : 123456
+Mot de passe : 123456 ou
 Email : admin@port.local
 Mot de passe : un_vrai_mot_de_passe
 
